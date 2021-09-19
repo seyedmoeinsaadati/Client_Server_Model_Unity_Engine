@@ -1,10 +1,11 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using static Server;
 
 public class Client : MonoBehaviour
 {
     static Server server;
+
+    public static int requestNumber;
 
     public string spawerName;
 
@@ -15,20 +16,20 @@ public class Client : MonoBehaviour
 
     public void Request()
     {
-        server.Request(spawerName, OnReceiveData);
+        server.Request(requestNumber, OnReceiveData);
     }
 
-    public void OnReceiveData(GameObject newObj)
+    public void OnReceiveData(Data data)
     {
-        print("Gameobject Received.");
+        requestNumber++;
+        GameObject gameObject = new GameObject(data.id + data.name);
+        gameObject.transform.position = data.position;
+        Debug.Log("a new game object created.");
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.N))
-        {
-            Request();
-        }
+        Request();
     }
 
 }

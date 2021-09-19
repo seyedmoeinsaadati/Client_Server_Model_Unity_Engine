@@ -1,5 +1,7 @@
 using System;
 
+
+[System.Serializable]
 public struct ThreadInfo<T>
 {
     public T parameter;

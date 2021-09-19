@@ -2,28 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using static Client;
 
+// rename gameObject
 public class Server : MonoBehaviour
 {
+    public Queue<ThreadInfo<Data>> requsetQueue = new Queue<ThreadInfo<Data>>();
 
-    Queue<ThreadInfo<GameObject>> requsetQueue = new Queue<ThreadInfo<GameObject>>();
-
-    public void Request(string gameObjName, Action<GameObject> callback)
+    public void Request(int requestNumber, Action<Data> callback)
     {
         ThreadStart thread = delegate
         {
-            RequestThread(gameObjName, callback);
+            RequestThread(requestNumber, callback);
         };
-
         new Thread(thread).Start();
     }
 
-    private void RequestThread(string gameObjName, Action<GameObject> callback)
+    private void RequestThread(int requestNumber, Action<Data> callback)
     {
-        GameObject gameObject = new GameObject(gameObjName);
+        Data newData = new Data(requestNumber, "Game Object", Vector3.zero);
+
         lock (requsetQueue)
         {
-            requsetQueue.Enqueue(new ThreadInfo<GameObject>(gameObject, callback));
+            requsetQueue.Enqueue(new ThreadInfo<Data>(newData, callback));
         }
     }
 
@@ -38,9 +39,24 @@ public class Server : MonoBehaviour
         {
             for (int i = 0; i < requsetQueue.Count; i++)
             {
-                ThreadInfo<GameObject> threadInfo = requsetQueue.Dequeue();
+                ThreadInfo<Data> threadInfo = requsetQueue.Dequeue();
                 threadInfo.callback(threadInfo.parameter);
             }
+        }
+    }
+
+    [System.Serializable]
+    public struct Data
+    {
+        public int id;
+        public string name;
+        public Vector3 position;
+
+        public Data(int id, string name, Vector3 position)
+        {
+            this.id = id;
+            this.name = name;
+            this.position = position;
         }
     }
 }
